@@ -1,0 +1,12 @@
+{
+  "name": "@wireside/dashboard-api",
+  "version": "1.0.0",
+  "description": "API для учебного проекта",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bogdan Salaev",
+  "license": "ISC"
+}
