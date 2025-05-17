@@ -130,8 +130,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-### Example user template template
-### Example user template
+# Typescript output emited files
+/dist
 
 # IntelliJ project files
 .idea

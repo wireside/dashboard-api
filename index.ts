@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { userRouter } from './users/users.js';
 
 const port = 8000;
@@ -40,7 +40,7 @@ app.get('/never', (req, res) => {
 })
 
 // error handler middleware should be after all app.use() calls
-app.use((err, req, res, next) => {
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 	console.log(err.message);
 	res.status(401).send(err.message)
 })
