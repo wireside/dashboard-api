@@ -1,11 +1,16 @@
 import { Response, Request, NextFunction } from 'express';
+import { inject, injectable } from 'inversify';
 import { BaseController } from '../common/base.controller.js';
 import { HTTPError } from '../errors/http-error.class.js';
-import { LoggerService } from '../logger/logger.service.js';
+import { ILogger } from '../logger/logger.interface.js';
+import { TYPES } from '../types.js';
 
+@injectable()
 export class UserController extends BaseController {
-	constructor(logger: LoggerService) {
-		super(logger);
+	constructor(
+		@inject(TYPES.ILogger) private loggerService: ILogger,
+	) {
+		super(loggerService);
 		this.bindRoutes([
 			{
 				path: '/login',
@@ -16,8 +21,8 @@ export class UserController extends BaseController {
 				path: '/signup',
 				func: this.signup,
 				method: 'post',
-			}
-		])
+			},
+		]);
 	}
 	
 	login(req: Request, res: Response, next: NextFunction): void {
@@ -25,6 +30,6 @@ export class UserController extends BaseController {
 	}
 	
 	signup(req: Request, res: Response, next: NextFunction): void {
-		this.ok<string>(res, 'signup')
+		this.ok<string>(res, 'signup');
 	}
 }

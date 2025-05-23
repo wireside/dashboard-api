@@ -1,13 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
+import { inject, injectable } from 'inversify';
+import { ILogger } from '../logger/logger.interface.js';
 import { LoggerService } from '../logger/logger.service.js';
+import { TYPES } from '../types.js';
 import { IExceptionFilter } from './exception.filter.interface.js';
 import { HTTPError } from './http-error.class.js';
 
-export class ExceptionFilter implements IExceptionFilter{
-	logger: LoggerService;
+@injectable()
+export class ExceptionFilter implements IExceptionFilter {
+	constructor(
+		@inject(TYPES.ILogger) private logger: ILogger,
+	) {
 	
-	constructor(logger: LoggerService) {
-		this.logger = logger;
 	}
 	
 	catch(err: Error | HTTPError, req: Request, res: Response, next: NextFunction) {
@@ -15,12 +19,12 @@ export class ExceptionFilter implements IExceptionFilter{
 			this.logger.error(`[${err.context}] ${err.statusCode}: ${err.message}`);
 			res.status(err.statusCode).send({
 				err: err.message,
-			})
+			});
 		} else {
 			this.logger.error(`${err.message}`);
 			res.status(500).send({
 				err: err.message,
-			})
+			});
 		}
 	}
 }
