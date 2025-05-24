@@ -5,6 +5,7 @@ import { ILogger } from './logger/logger.interface.js';
 import { LoggerService } from './logger/logger.service.js';
 import { Server } from 'http';
 import { TYPES } from './types.js';
+import { IUserController } from './users/users.controller.inteface.js';
 import { UserController } from './users/users.controller.js';
 
 @injectable()
@@ -15,9 +16,9 @@ export class App {
 	
 	constructor(
 		@inject(TYPES.ILogger) private logger: ILogger,
-		@inject(TYPES.UserController) private userController: UserController,
+		@inject(TYPES.UserController) private userController: IUserController,
 		@inject(TYPES.ExceptionFilter) private exceptionFilter: ExceptionFilter,
-		) {
+	) {
 		this.app = express();
 		this.port = 8000;
 	}
