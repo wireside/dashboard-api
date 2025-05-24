@@ -8,9 +8,7 @@ import { IUserController } from './users.controller.inteface.js';
 
 @injectable()
 export class UserController extends BaseController implements IUserController {
-	constructor(
-		@inject(TYPES.ILogger) private loggerService: ILogger,
-	) {
+	constructor(@inject(TYPES.ILogger) private loggerService: ILogger) {
 		super(loggerService);
 		this.bindRoutes([
 			{
@@ -25,11 +23,11 @@ export class UserController extends BaseController implements IUserController {
 			},
 		]);
 	}
-	
+
 	public login(req: Request, res: Response, next: NextFunction): void {
 		next(new HTTPError(401, 'Not authorized', 'users/login'));
 	}
-	
+
 	public signup(req: Request, res: Response, next: NextFunction): void {
 		this.ok<string>(res, 'signup');
 	}

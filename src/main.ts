@@ -8,6 +8,11 @@ import { TYPES } from './types.js';
 import { IUserController } from './users/users.controller.inteface.js';
 import { UserController } from './users/users.controller.js';
 
+export type BootstrapReturn = {
+	appContainer: Container;
+	app: App;
+};
+
 export const appBindings = new ContainerModule(({ bind }) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService);
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
@@ -15,15 +20,14 @@ export const appBindings = new ContainerModule(({ bind }) => {
 	bind<App>(TYPES.Application).to(App);
 });
 
-function bootstrap() {
+function bootstrap(): BootstrapReturn {
 	const appContainer = new Container();
 	appContainer.loadSync(appBindings);
-	
+
 	const app = appContainer.get<App>(TYPES.Application);
 	app.init().then();
-	
+
 	return { app, appContainer };
 }
-
 
 export const { app, appContainer } = bootstrap();
