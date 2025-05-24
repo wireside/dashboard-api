@@ -4,9 +4,10 @@ import { BaseController } from '../common/base.controller.js';
 import { HTTPError } from '../errors/http-error.class.js';
 import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
+import { IUserController } from './users.controller.inteface.js';
 
 @injectable()
-export class UserController extends BaseController {
+export class UserController extends BaseController implements IUserController {
 	constructor(
 		@inject(TYPES.ILogger) private loggerService: ILogger,
 	) {
@@ -25,11 +26,11 @@ export class UserController extends BaseController {
 		]);
 	}
 	
-	login(req: Request, res: Response, next: NextFunction): void {
+	public login(req: Request, res: Response, next: NextFunction): void {
 		next(new HTTPError(401, 'Not authorized', 'users/login'));
 	}
 	
-	signup(req: Request, res: Response, next: NextFunction): void {
+	public signup(req: Request, res: Response, next: NextFunction): void {
 		this.ok<string>(res, 'signup');
 	}
 }
