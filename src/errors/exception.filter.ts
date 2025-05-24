@@ -10,9 +10,7 @@ import { HTTPError } from './http-error.class.js';
 export class ExceptionFilter implements IExceptionFilter {
 	constructor(
 		@inject(TYPES.ILogger) private logger: ILogger,
-	) {
-	
-	}
+	) { }
 	
 	catch(err: Error | HTTPError, req: Request, res: Response, next: NextFunction) {
 		if (err instanceof HTTPError) {

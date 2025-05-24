@@ -1,6 +1,5 @@
 import { Container } from 'inversify';
 import { App } from './app.js';
-import { BaseController } from './common/base.controller.js';
 import { IExceptionFilter } from './errors/exception.filter.interface.js';
 import { ExceptionFilter } from './errors/exception.filter.js';
 import { ILogger } from './logger/logger.interface.js';
@@ -13,7 +12,7 @@ const appContainer = new Container();
 
 appContainer.bind<ILogger>(TYPES.ILogger).to(LoggerService);
 appContainer.bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
-appContainer.bind<BaseController>(TYPES.UserController).to(UserController);
+appContainer.bind<UserController>(TYPES.UserController).to(UserController);
 appContainer.bind<App>(TYPES.Application).to(App);
 
 const app = appContainer.get<App>(TYPES.Application);
