@@ -33,6 +33,7 @@ export default defineConfig([
 
 		rules: {
 			'no-empty-function': 'off',
+			'no-trailing-spaces': 'off',
 			'@typescript-eslint/ban-types': 'off',
 			'@typescript-eslint/no-unused-vars': 'off',
 			'@typescript-eslint/explicit-function-return-type': ['warn'],
@@ -46,6 +47,7 @@ export default defineConfig([
 					bracketSpacing: true,
 					printWidth: 100,
 					endOfLine: 'auto',
+					trailingSpaces: false,
 				},
 			],
 		},
