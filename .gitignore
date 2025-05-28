@@ -138,3 +138,6 @@ dist
 *.iml
 out
 gen
+
+# Clinic doctor generated files
+/.clinic

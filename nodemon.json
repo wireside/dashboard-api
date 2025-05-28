@@ -6,5 +6,6 @@
   "ignore": [
     "src/**/*.spec.ts"
   ],
+  "delay": 0,
   "exec": "tsc --noEmit && tsx ./src/main.ts"
 }
