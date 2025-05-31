@@ -1,3 +1,4 @@
+import bodyParser from 'body-parser';
 import express, { Express } from 'express';
 import { inject, injectable } from 'inversify';
 import { ExceptionFilter } from './errors/exception.filter.js';
@@ -20,6 +21,10 @@ export class App {
 		this.app = express();
 		this.port = 8000;
 	}
+	
+	useMiddleware(): void {
+		this.app.use(bodyParser.json())
+	}
 
 	useRoutes(): void {
 		this.app.use('/users', this.userController.router);
@@ -30,6 +35,7 @@ export class App {
 	}
 
 	public async init(): Promise<void> {
+		this.useMiddleware()
 		this.useRoutes();
 		this.useExceptionFilters();
 		this.server = this.app.listen(this.port, () => {

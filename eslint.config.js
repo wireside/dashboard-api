@@ -20,7 +20,7 @@ export default defineConfig([
 			'eslint:recommended',
 			'plugin:@typescript-eslint/eslint-recommended',
 			'plugin:@typescript-eslint/recommended',
-			'plugin:prettier/recommended',
+			// 'plugin:prettier/recommended',
 		),
 
 		plugins: {
@@ -29,27 +29,29 @@ export default defineConfig([
 
 		languageOptions: {
 			parser: tsParser,
+			
 		},
 
 		rules: {
 			'no-empty-function': 'off',
 			'no-trailing-spaces': 'off',
 			'@typescript-eslint/ban-types': 'off',
+			'@typescript-eslint/no-empty-object-type': 'off',
 			'@typescript-eslint/no-unused-vars': 'off',
 			'@typescript-eslint/explicit-function-return-type': ['warn'],
-			'prettier/prettier': [
-				'error',
-				{
-					singleQuote: true,
-					trailingComma: 'all',
-					useTabs: true,
-					semi: true,
-					bracketSpacing: true,
-					printWidth: 100,
-					endOfLine: 'auto',
-					trailingSpaces: false,
-				},
-			],
+			// 'prettier/prettier': [
+			// 	'error',
+			// 	{
+			// 		singleQuote: true,
+			// 		trailingComma: 'all',
+			// 		useTabs: true,
+			// 		semi: true,
+			// 		bracketSpacing: true,
+			// 		printWidth: 100,
+			// 		endOfLine: 'auto',
+			// 		trailingSpaces: false,
+			// 	},
+			// ],
 		},
 	},
 ]);
