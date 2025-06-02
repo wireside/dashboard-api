@@ -7,5 +7,5 @@
     "src/**/*.spec.ts"
   ],
   "delay": 0,
-  "exec": "tsc --noEmit && tsx ./src/main.ts"
+  "exec": "tsc --noEmit && tsx ./src/main.ts || exit 1"
 }
