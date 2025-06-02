@@ -1,6 +1,7 @@
-import { Response, Request, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { BaseController } from '../common/base.controller.js';
+import { ValidateMiddleware } from '../common/validate.middleware';
 import { HTTPError } from '../errors/http-error.class.js';
 import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
@@ -27,6 +28,7 @@ export class UserController extends BaseController implements IUserController {
 				path: '/signup',
 				func: this.signup,
 				method: 'post',
+				middlewares: [new ValidateMiddleware(UserSignupDto)],
 			},
 		]);
 	}
@@ -43,7 +45,7 @@ export class UserController extends BaseController implements IUserController {
 	): Promise<void> {
 		const result = await this.userService.createUser(body);
 		if (!result) {
-			return next(new HTTPError(422, 'User is already exists', 'users/signup'))
+			return next(new HTTPError(422, 'User is already exists', 'users/signup'));
 		}
 		this.ok<User>(res, result);
 	}

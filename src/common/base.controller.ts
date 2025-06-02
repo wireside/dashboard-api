@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Response, Router } from 'express';
 import { injectable } from 'inversify';
 import { ILogger } from '../logger/logger.interface.js';
 import { IBaseController } from './base.controller.interface.js';
@@ -31,11 +31,11 @@ export abstract class BaseController implements IBaseController {
 
 	protected bindRoutes(routes: IControllerRoute[]): void {
 		for (const route of routes) {
-			const { path, func, method } = route;
-			const handler = func.bind(this);
-
-			this.router[method](path, handler);
-			this.logger.log(`[${method}] ${path}`);
+			const middlewares = route.middlewares?.map((m) => m.execute.bind(m));
+			const handler = route.func.bind(this);
+			const pipeline = middlewares ? [...middlewares, handler] : handler;
+			this.router[route.method](route.path, pipeline);
+			this.logger.log(`[${route.method}] ${route.path}`);
 		}
 	}
 }
