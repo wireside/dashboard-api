@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "API для учебного проекта",
   "main": "dist/main.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "node ./dist/main.js",
     "dev": "nodemon",
@@ -20,6 +20,7 @@
     "body-parser": "^2.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "inversify": "^7.5.1",
     "tslog": "^4.9.3"
