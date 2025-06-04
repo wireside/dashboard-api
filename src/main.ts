@@ -11,6 +11,8 @@ import { LoggerService } from './logger/logger.service';
 import { TYPES } from './types';
 import { UserController } from './users/users.controller';
 import { IUserController } from './users/users.controller.inteface';
+import { UserRepository } from './users/users.repository';
+import { IUserRepository } from './users/users.repository.interface';
 import { UserService } from './users/users.service';
 import { IUserService } from './users/users.service.interface';
 
@@ -24,6 +26,7 @@ export const appBindings = new ContainerModule(({ bind }) => {
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
 	bind<IUserController>(TYPES.UserController).to(UserController);
 	bind<IUserService>(TYPES.UserService).to(UserService);
+	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
 	bind<IConfigService>(TYPES.ConfigService).to(ConfigService).inSingletonScope();
 	bind<IPrismaService>(TYPES.PrismaService).to(PrismaService).inSingletonScope();
 	bind<App>(TYPES.Application).to(App).inSingletonScope();

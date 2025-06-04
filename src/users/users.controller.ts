@@ -1,3 +1,4 @@
+import { User } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { BaseController } from '../common/base.controller.js';
@@ -7,7 +8,6 @@ import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserSignupDto } from './dto/user-signup.dto';
-import { User } from './user.entity';
 import { IUserController } from './users.controller.inteface.js';
 import { IUserService } from './users.service.interface';
 
@@ -47,6 +47,10 @@ export class UserController extends BaseController implements IUserController {
 		if (!result) {
 			return next(new HTTPError(422, 'User is already exists', 'users/signup'));
 		}
-		this.ok<User>(res, result);
+		this.ok<Omit<User, 'password'>>(res, {
+			id: result.id,
+			email: result.email,
+			name: result.name,
+		});
 	}
 }

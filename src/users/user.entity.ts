@@ -1,6 +1,6 @@
 import { hash } from 'bcryptjs';
 
-export class User {
+export class UserEntity {
 	private _password: string;
 
 	constructor(
@@ -14,6 +14,10 @@ export class User {
 
 	get name(): string {
 		return this._name;
+	}
+
+	get password(): string {
+		return this._password;
 	}
 
 	public async setPassword(password: string, salt: number): Promise<void> {
