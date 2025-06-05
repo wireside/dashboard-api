@@ -1,5 +1,7 @@
 import { Container, ContainerModule } from 'inversify';
 import { App } from './app';
+import { AuthService } from './auth/auth.service';
+import { IAuthService } from './auth/auth.service.interface';
 import { ConfigService } from './config/config.service';
 import { IConfigService } from './config/config.service.interface';
 import { PrismaService } from './database/prisma.service';
@@ -24,6 +26,7 @@ export type BootstrapReturn = {
 export const appBindings = new ContainerModule(({ bind }) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
+	bind<IAuthService>(TYPES.AuthService).to(AuthService);
 	bind<IUserController>(TYPES.UserController).to(UserController);
 	bind<IUserService>(TYPES.UserService).to(UserService);
 	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();

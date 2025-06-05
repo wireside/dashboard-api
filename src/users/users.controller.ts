@@ -6,6 +6,7 @@ import { ValidateMiddleware } from '../common/validate.middleware';
 import { HTTPError } from '../errors/http-error.class.js';
 import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
+import { IAuthService } from '../auth/auth.service.interface';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { IUserController } from './users.controller.inteface.js';
@@ -16,6 +17,7 @@ export class UserController extends BaseController implements IUserController {
 	constructor(
 		@inject(TYPES.ILogger) private loggerService: ILogger,
 		@inject(TYPES.UserService) private userService: IUserService,
+		@inject(TYPES.AuthService) private authService: IAuthService,
 	) {
 		super(loggerService);
 		this.bindRoutes([
@@ -31,6 +33,12 @@ export class UserController extends BaseController implements IUserController {
 				method: 'post',
 				middlewares: [new ValidateMiddleware(UserSignupDto)],
 			},
+			{
+				path: '/info',
+				func: this.info,
+				method: 'get',
+				middlewares: [],
+			}
 		]);
 	}
 
@@ -43,7 +51,8 @@ export class UserController extends BaseController implements IUserController {
 		if (!result) {
 			return next(new HTTPError(401, 'Not authorized', 'users/login'));
 		}
-		this.ok(res, {});
+		const jwt: string = await this.authService.signJWT(body.email);
+		this.ok(res, { jwt });
 	}
 
 	public async signup(
@@ -60,5 +69,13 @@ export class UserController extends BaseController implements IUserController {
 			email: result.email,
 			name: result.name,
 		});
+	}
+	
+	public async info(
+		{ user }: Request<{}, {}, UserSignupDto>,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		this.ok(res, user)
 	}
 }

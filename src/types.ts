@@ -1,3 +1,5 @@
+import { AuthService } from './auth/auth.service';
+
 export const TYPES = {
 	Application: Symbol.for('Application'),
 	ILogger: Symbol.for('ILogger'),
@@ -7,4 +9,5 @@ export const TYPES = {
 	ExceptionFilter: Symbol.for('ExceptionFilter'),
 	ConfigService: Symbol.for('ConfigService'),
 	PrismaService: Symbol.for('PrismaService'),
+	AuthService: Symbol.for('AuthService'),
 };

@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import express, { Express } from 'express';
 import { inject, injectable } from 'inversify';
 import { Server } from 'node:http';
+import { AuthMiddleware } from './auth/auth.middleware';
 import { IConfigService } from './config/config.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
 import { ExceptionFilter } from './errors/exception.filter';
@@ -28,6 +29,8 @@ export class App {
 
 	useMiddleware(): void {
 		this.app.use(bodyParser.json());
+		const authMiddleware = new AuthMiddleware(this.configService.get('SECRET_KEY'));
+		this.app.use(authMiddleware.execute.bind(authMiddleware))
 	}
 
 	useRoutes(): void {
