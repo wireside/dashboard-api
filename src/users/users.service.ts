@@ -38,4 +38,8 @@ export class UserService implements IUserService {
 		);
 		return userToValidate.comparePassword(password);
 	}
+	
+	public async getUser(email: string): Promise<User | null> {
+		return this.userRepository.find(email);
+	}
 }

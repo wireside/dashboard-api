@@ -1,12 +1,13 @@
 import { User } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
+import { AuthGuardMiddleware } from '../auth/auth.guard.middleware';
+import { IAuthService } from '../auth/auth.service.interface';
 import { BaseController } from '../common/base.controller.js';
 import { ValidateMiddleware } from '../common/validate.middleware';
 import { HTTPError } from '../errors/http-error.class.js';
 import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
-import { IAuthService } from '../auth/auth.service.interface';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { IUserController } from './users.controller.inteface.js';
@@ -37,8 +38,8 @@ export class UserController extends BaseController implements IUserController {
 				path: '/info',
 				func: this.info,
 				method: 'get',
-				middlewares: [],
-			}
+				middlewares: [new AuthGuardMiddleware('users/info')],
+			},
 		]);
 	}
 
@@ -49,7 +50,7 @@ export class UserController extends BaseController implements IUserController {
 	): Promise<void> {
 		const result = await this.userService.validateUser(body);
 		if (!result) {
-			return next(new HTTPError(401, 'Not authorized', 'users/login'));
+			return next(new HTTPError(401, 'Authorization failed', 'users/login'));
 		}
 		const jwt: string = await this.authService.signJWT(body.email);
 		this.ok(res, { jwt });
@@ -70,12 +71,16 @@ export class UserController extends BaseController implements IUserController {
 			name: result.name,
 		});
 	}
-	
+
 	public async info(
 		{ user }: Request<{}, {}, UserSignupDto>,
 		res: Response,
 		next: NextFunction,
 	): Promise<void> {
-		this.ok(res, user)
+		const userData = await this.userService.getUser(user.email);
+		this.ok(res, {
+			id: userData?.id,
+			email: userData?.email,
+		});
 	}
 }

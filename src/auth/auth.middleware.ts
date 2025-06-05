@@ -15,9 +15,11 @@ export class AuthMiddleware implements IMiddleware {
 					req.user = {
 						email,
 					};
+					next();
 				}
 			});
+		} else {
+			next();
 		}
-		next();
 	}
 }

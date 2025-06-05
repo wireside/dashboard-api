@@ -5,4 +5,5 @@ import { UserSignupDto } from './dto/user-signup.dto';
 export interface IUserService {
 	createUser: (dto: UserSignupDto) => Promise<User | null>;
 	validateUser: (dto: UserLoginDto) => Promise<boolean>;
+	getUser: (email: string) => Promise<User | null>;
 }
