@@ -15,7 +15,7 @@ export class UserService implements IUserService {
 		@inject(TYPES.UserRepository) private userRepository: IUserRepository,
 	) {}
 
-	async createUser({ email, name, password }: UserSignupDto): Promise<User | null> {
+	public async createUser({ email, name, password }: UserSignupDto): Promise<User | null> {
 		const newUser = new UserEntity(email, name);
 		const salt = this.configService.get('SALT');
 		await newUser.setPassword(password, Number(salt));
@@ -23,11 +23,19 @@ export class UserService implements IUserService {
 		if (existedUser) {
 			return null;
 		}
-
 		return this.userRepository.create(newUser);
 	}
 
-	async validateUser(dto: UserLoginDto): Promise<boolean> {
-		return true;
+	public async validateUser({ email, password }: UserLoginDto): Promise<boolean> {
+		const existedUser = await this.userRepository.find(email);
+		if (!existedUser) {
+			return false;
+		}
+		const userToValidate = new UserEntity(
+			existedUser.email,
+			existedUser.name,
+			existedUser.password,
+		);
+		return userToValidate.comparePassword(password);
 	}
 }
