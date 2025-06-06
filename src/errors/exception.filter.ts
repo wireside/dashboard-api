@@ -14,12 +14,12 @@ export class ExceptionFilter implements IExceptionFilter {
 		if (err instanceof HTTPError) {
 			this.logger.error(`[${err.context}] ${err.statusCode}: ${err.message}`);
 			res.status(err.statusCode).send({
-				err: err.message,
+				error: err.message,
 			});
 		} else {
 			this.logger.error(`${err.message}`);
 			res.status(500).send({
-				err: err.message,
+				error: err.message,
 			});
 		}
 	}
