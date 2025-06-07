@@ -26,7 +26,7 @@ export type BootstrapReturn = {
 export const appBindings = new ContainerModule(({ bind }) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
-	bind<IAuthService>(TYPES.AuthService).to(AuthService);
+	bind<IAuthService>(TYPES.AuthService).to(AuthService).inSingletonScope();
 	bind<IUserController>(TYPES.UserController).to(UserController);
 	bind<IUserService>(TYPES.UserService).to(UserService);
 	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();

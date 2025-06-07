@@ -54,7 +54,11 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ['src/common/route.interface.ts'],
+		files: [
+			'src/common/route.interface.ts',
+			'src/auth/auth.service.ts',
+			'src/auth/auth.service.interface.ts',
+		],
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'off',
 		},

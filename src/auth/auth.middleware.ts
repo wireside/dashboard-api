@@ -1,25 +1,32 @@
 import { NextFunction, Request, Response } from 'express';
-import { JwtPayload, verify } from 'jsonwebtoken';
+import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from 'jsonwebtoken';
 import { IMiddleware } from '../common/middleware.interface';
+import { HTTPError } from '../errors/http-error.class';
+import { IAuthService } from './auth.service.interface';
 
 export class AuthMiddleware implements IMiddleware {
-	constructor(private secretKey: string) {}
+	constructor(private authService: IAuthService) {}
 
-	execute(req: Request, res: Response, next: NextFunction): void {
+	async execute(req: Request, res: Response, next: NextFunction): Promise<void> {
 		if (req.headers.authorization) {
-			verify(req.headers.authorization.split(' ')[1], this.secretKey, (error, payload) => {
-				if (error) {
-					next();
-				} else if (payload as JwtPayload) {
-					const { email } = payload as JwtPayload;
-					req.user = {
-						email,
-					};
-					next();
+			const accessToken = req.headers.authorization.split(' ')[1];
+
+			try {
+				req.user = await this.authService.verifyAccessToken(accessToken);
+				return next();
+			} catch (e) {
+				if (e instanceof TokenExpiredError) {
+					return next(new HTTPError(401, 'Access token is expired', 'auth'));
+				} else if (e instanceof NotBeforeError) {
+					return next(new HTTPError(401, 'Access token is not valid yet', 'auth'));
+				} else if (e instanceof JsonWebTokenError) {
+					return next(new HTTPError(401, 'Invalid access token', 'auth'));
+				} else {
+					return next(new HTTPError(500, 'Internal server error while verifying token', 'auth'));
 				}
-			});
-		} else {
-			next();
+			}
 		}
+
+		return next();
 	}
 }

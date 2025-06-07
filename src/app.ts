@@ -1,8 +1,10 @@
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import express, { Express } from 'express';
 import { inject, injectable } from 'inversify';
 import { Server } from 'node:http';
 import { AuthMiddleware } from './auth/auth.middleware';
+import { IAuthService } from './auth/auth.service.interface';
 import { IConfigService } from './config/config.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
 import { ExceptionFilter } from './errors/exception.filter';
@@ -20,8 +22,8 @@ export class App {
 		@inject(TYPES.ILogger) private logger: ILogger,
 		@inject(TYPES.UserController) private userController: IUserController,
 		@inject(TYPES.ExceptionFilter) private exceptionFilter: ExceptionFilter,
-		@inject(TYPES.ConfigService) private configService: IConfigService,
 		@inject(TYPES.PrismaService) private prismaService: IPrismaService,
+		@inject(TYPES.AuthService) private authService: IAuthService,
 	) {
 		this.app = express();
 		this.port = 8000;
@@ -29,8 +31,9 @@ export class App {
 
 	useMiddleware(): void {
 		this.app.use(bodyParser.json());
-		const authMiddleware = new AuthMiddleware(this.configService.get('SECRET_KEY'));
-		this.app.use(authMiddleware.execute.bind(authMiddleware))
+		this.app.use(cookieParser());
+		const authMiddleware = new AuthMiddleware(this.authService);
+		this.app.use(authMiddleware.execute.bind(authMiddleware));
 	}
 
 	useRoutes(): void {

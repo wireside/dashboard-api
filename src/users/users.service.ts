@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { inject, injectable } from 'inversify';
 import { IConfigService } from '../config/config.service.interface';
 import { TYPES } from '../types';
@@ -19,27 +19,35 @@ export class UserService implements IUserService {
 		const newUser = new UserEntity(email, name);
 		const salt = this.configService.get('SALT');
 		await newUser.setPassword(password, Number(salt));
-		const existedUser = await this.userRepository.find(newUser.email);
+		const existedUser = await this.userRepository.find({ email: newUser.email });
 		if (existedUser) {
 			return null;
 		}
 		return this.userRepository.create(newUser);
 	}
 
-	public async validateUser({ email, password }: UserLoginDto): Promise<boolean> {
-		const existedUser = await this.userRepository.find(email);
+	public async authenticateUser({ email, password }: UserLoginDto): Promise<User | null> {
+		const existedUser = await this.userRepository.find({ email });
 		if (!existedUser) {
-			return false;
+			return null;
 		}
 		const userToValidate = new UserEntity(
 			existedUser.email,
 			existedUser.name,
 			existedUser.password,
 		);
-		return userToValidate.comparePassword(password);
+		if (await userToValidate.comparePassword(password)) {
+			return existedUser;
+		}
+
+		return null;
 	}
-	
-	public async getUser(email: string): Promise<User | null> {
-		return this.userRepository.find(email);
+
+	public async getUser(where: Prisma.UserWhereUniqueInput): Promise<User | null> {
+		return this.userRepository.find(where);
+	}
+
+	public async getUserById(userId: number): Promise<User | null> {
+		return this.userRepository.findById(userId);
 	}
 }
