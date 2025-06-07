@@ -84,7 +84,7 @@ export class AuthService implements IAuthService {
 	}
 
 	public async deleteRefreshToken(userId: number): Promise<User> {
-		return this.userRepository.update(userId, { refreshToken: undefined });
+		return this.userRepository.update(userId, { refreshToken: null });
 	}
 
 	public async verifyStoredRefreshToken(userId: number, token: string): Promise<boolean> {

@@ -1,10 +1,11 @@
 import { Response, Router } from 'express';
-import { IControllerRoute } from './route.interface.js';
+import { IApiResponse } from './api-response.interface';
+import { ExpressReturnType, IControllerRoute } from './route.interface.js';
 
 export interface IBaseController {
 	get router(): Router;
 
-	send: <T>(res: Response, code: number, message: T) => Response;
-	ok: <T>(res: Response, message: T) => Response;
-	created: (res: Response) => Response;
+	send: <T>(res: Response<IApiResponse>, code: number, data: T) => ExpressReturnType<IApiResponse>;
+	ok: <T>(res: Response<IApiResponse>, data: T) => ExpressReturnType<IApiResponse>;
+	created: <T>(res: Response<IApiResponse>, data: T) => ExpressReturnType<IApiResponse>;
 }

@@ -58,6 +58,7 @@ export default defineConfig([
 			'src/common/route.interface.ts',
 			'src/auth/auth.service.ts',
 			'src/auth/auth.service.interface.ts',
+			'src/common/api-response.interface.ts',
 		],
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'off',

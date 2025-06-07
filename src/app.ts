@@ -5,10 +5,10 @@ import { inject, injectable } from 'inversify';
 import { Server } from 'node:http';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { IAuthService } from './auth/auth.service.interface';
-import { IConfigService } from './config/config.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
 import { ExceptionFilter } from './errors/exception.filter';
 import { ILogger } from './logger/logger.interface';
+import { LogMiddleware } from './logger/logger.middleware';
 import { TYPES } from './types';
 import { IUserController } from './users/users.controller.inteface';
 
@@ -32,6 +32,8 @@ export class App {
 	useMiddleware(): void {
 		this.app.use(bodyParser.json());
 		this.app.use(cookieParser());
+		const logMiddleware = new LogMiddleware(this.logger);
+		this.app.use(logMiddleware.execute.bind(logMiddleware));
 		const authMiddleware = new AuthMiddleware(this.authService);
 		this.app.use(authMiddleware.execute.bind(authMiddleware));
 	}

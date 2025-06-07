@@ -1,6 +1,7 @@
 import { Response, Router } from 'express';
 import { injectable } from 'inversify';
 import { ILogger } from '../logger/logger.interface.js';
+import { IApiResponse } from './api-response.interface';
 import { IBaseController } from './base.controller.interface.js';
 import { ExpressReturnType, IControllerRoute } from './route.interface.js';
 
@@ -16,17 +17,24 @@ export abstract class BaseController implements IBaseController {
 		return this._router;
 	}
 
-	public send<T>(res: Response, code: number, message: T): ExpressReturnType {
+	public send<T>(
+		res: Response<IApiResponse>,
+		code: number,
+		data: T,
+	): ExpressReturnType<IApiResponse> {
 		res.type('application/json');
-		return res.status(code).json(message);
+		return res.status(code).json({
+			success: true,
+			data,
+		});
 	}
 
-	public ok<T>(res: Response, message: T): ExpressReturnType {
-		return this.send<T>(res, 200, message);
+	public ok<T>(res: Response<IApiResponse>, data: T): ExpressReturnType<IApiResponse> {
+		return this.send<T>(res, 200, data);
 	}
 
-	public created(res: Response): ExpressReturnType {
-		return res.sendStatus(201);
+	public created<T>(res: Response<IApiResponse>, data: T): ExpressReturnType<IApiResponse> {
+		return this.send<T>(res, 201, data);
 	}
 
 	protected bindRoutes(routes: IControllerRoute[]): void {
