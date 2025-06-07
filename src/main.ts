@@ -6,6 +6,7 @@ import { ConfigService } from './config/config.service';
 import { IConfigService } from './config/config.service.interface';
 import { PrismaService } from './database/prisma.service';
 import { IPrismaService } from './database/prisma.service.interface';
+import { AuthExceptionFilter } from './errors/auth.exception.filter';
 import { ExceptionFilter } from './errors/exception.filter';
 import { IExceptionFilter } from './errors/exception.filter.interface';
 import { ILogger } from './logger/logger.interface';
@@ -26,6 +27,7 @@ export type BootstrapReturn = {
 export const appBindings = new ContainerModule(({ bind }) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
+	bind<IExceptionFilter>(TYPES.AuthExceptionFilter).to(AuthExceptionFilter);
 	bind<IAuthService>(TYPES.AuthService).to(AuthService).inSingletonScope();
 	bind<IUserController>(TYPES.UserController).to(UserController);
 	bind<IUserService>(TYPES.UserService).to(UserService);

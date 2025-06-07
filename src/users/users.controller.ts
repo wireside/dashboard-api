@@ -8,6 +8,7 @@ import { IApiResponse } from '../common/api-response.interface';
 import { BaseController } from '../common/base.controller.js';
 import { ValidateMiddleware } from '../common/validate.middleware';
 import { IConfigService } from '../config/config.service.interface';
+import { AuthError } from '../errors/auth-error.class';
 import { HTTPError } from '../errors/http-error.class.js';
 import { ILogger } from '../logger/logger.interface.js';
 import { TYPES } from '../types.js';
@@ -66,7 +67,7 @@ export class UserController extends BaseController implements IUserController {
 	): Promise<void> {
 		const user = await this.userService.authenticateUser(body);
 		if (!user) {
-			return next(new HTTPError(401, 'Authorization failed', 'auth:login'));
+			return next(new AuthError(401, 'Authorization failed', 'auth:login'));
 		}
 
 		const payload = {
@@ -97,7 +98,7 @@ export class UserController extends BaseController implements IUserController {
 	): Promise<void> {
 		const result = await this.userService.createUser(body);
 		if (!result) {
-			return next(new HTTPError(422, 'User is already exists', 'auth:signup'));
+			return next(new AuthError(422, 'User is already exists', 'auth:signup'));
 		}
 
 		this.created<Partial<User>>(
@@ -128,7 +129,7 @@ export class UserController extends BaseController implements IUserController {
 
 			this.ok(res, { message: 'Logged out successfully' }, 'auth');
 		} catch (e) {
-			return next(new HTTPError(401, 'Invalid refresh token', 'auth:logout'));
+			return next(new AuthError(401, 'Invalid refresh token', 'auth:logout'));
 		}
 	}
 
@@ -137,19 +138,19 @@ export class UserController extends BaseController implements IUserController {
 			const refreshToken = req.cookies.refreshToken;
 
 			if (!refreshToken) {
-				return next(new HTTPError(401, 'Missing refresh token', 'auth:refresh'));
+				return next(new AuthError(401, 'Missing refresh token', 'auth:refresh'));
 			}
 
 			const { email }: JwtPayload = await this.authService.verifyRefreshToken(refreshToken);
 
 			const user = await this.userService.getUser({ email });
 			if (!user) {
-				return next(new HTTPError(404, 'User not found', 'auth:refresh'));
+				return next(new AuthError(404, 'User not found', 'auth:refresh'));
 			}
 
 			const isValid = await this.authService.verifyStoredRefreshToken(user.id, refreshToken);
 			if (!isValid) {
-				return next(new HTTPError(401, 'Invalid refresh token', 'auth:refresh'));
+				return next(new AuthError(401, 'Invalid refresh token', 'auth:refresh'));
 			}
 
 			const payload = {
@@ -173,9 +174,17 @@ export class UserController extends BaseController implements IUserController {
 			this.ok(res, { accessToken: newAccessToken }, 'auth');
 		} catch (e) {
 			if (e instanceof TokenExpiredError) {
-				this.send(res, 302, 'Refresh token expired, please login again');
+				this.send(
+					res,
+					302,
+					{
+						refreshToken: { expired: true },
+						message: 'Refresh token expired, please login again',
+					},
+					'auth',
+				);
 			} else if (e instanceof JsonWebTokenError) {
-				return next(new HTTPError(401, 'Invalid refresh token', 'auth:refresh'));
+				return next(new AuthError(401, 'Invalid refresh token', 'auth:refresh'));
 			}
 
 			return next(

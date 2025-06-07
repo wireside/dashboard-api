@@ -6,7 +6,7 @@ import { Server } from 'node:http';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { IAuthService } from './auth/auth.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
-import { ExceptionFilter } from './errors/exception.filter';
+import { IExceptionFilter } from './errors/exception.filter.interface';
 import { ILogger } from './logger/logger.interface';
 import { LogMiddleware } from './logger/logger.middleware';
 import { TYPES } from './types';
@@ -21,7 +21,8 @@ export class App {
 	constructor(
 		@inject(TYPES.ILogger) private logger: ILogger,
 		@inject(TYPES.UserController) private userController: IUserController,
-		@inject(TYPES.ExceptionFilter) private exceptionFilter: ExceptionFilter,
+		@inject(TYPES.ExceptionFilter) private exceptionFilter: IExceptionFilter,
+		@inject(TYPES.AuthExceptionFilter) private authExceptionFilter: IExceptionFilter,
 		@inject(TYPES.PrismaService) private prismaService: IPrismaService,
 		@inject(TYPES.AuthService) private authService: IAuthService,
 	) {
@@ -43,6 +44,7 @@ export class App {
 	}
 
 	useExceptionFilters(): void {
+		this.app.use(this.authExceptionFilter.catch.bind(this.authExceptionFilter));
 		this.app.use(this.exceptionFilter.catch.bind(this.exceptionFilter));
 	}
 

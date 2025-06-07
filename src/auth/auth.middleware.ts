@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from 'jsonwebtoken';
 import { IMiddleware } from '../common/middleware.interface';
+import { AuthError } from '../errors/auth-error.class';
 import { HTTPError } from '../errors/http-error.class';
 import { IAuthService } from './auth.service.interface';
 
@@ -16,11 +17,11 @@ export class AuthMiddleware implements IMiddleware {
 				return next();
 			} catch (e) {
 				if (e instanceof TokenExpiredError) {
-					return next(new HTTPError(401, 'Access token is expired', 'auth'));
+					return next(new AuthError(401, 'Access token is expired', 'auth', { expired: true }));
 				} else if (e instanceof NotBeforeError) {
-					return next(new HTTPError(401, 'Access token is not valid yet', 'auth'));
+					return next(new AuthError(401, 'Access token is not valid yet', 'auth'));
 				} else if (e instanceof JsonWebTokenError) {
-					return next(new HTTPError(401, 'Invalid access token', 'auth'));
+					return next(new AuthError(401, 'Invalid access token', 'auth'));
 				} else {
 					return next(new HTTPError(500, 'Internal server error while verifying token', 'auth'));
 				}

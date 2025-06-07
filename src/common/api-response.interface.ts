@@ -6,7 +6,7 @@ export interface IApiResponse<T = any> {
 
 export interface IApiErrorResponse {
 	success: boolean;
-	error: IApiError | null;
+	error: IAuthApiError | IApiError | null;
 	meta?: Record<string, any>;
 }
 
@@ -14,6 +14,12 @@ export interface IApiError {
 	statusCode: number;
 	errors: IError[];
 	stack?: string | undefined;
+}
+
+export interface IAuthApiError extends IApiError {
+	token: {
+		expired: boolean;
+	};
 }
 
 export interface IError {

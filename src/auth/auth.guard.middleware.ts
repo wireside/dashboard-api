@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { injectable } from 'inversify';
 import { IMiddleware } from '../common/middleware.interface';
-import { HTTPError } from '../errors/http-error.class';
+import { AuthError } from '../errors/auth-error.class';
 import { IAuthService } from './auth.service.interface';
 
 export class AuthGuardMiddleware implements IMiddleware {
@@ -15,6 +14,6 @@ export class AuthGuardMiddleware implements IMiddleware {
 			return next();
 		}
 
-		return next(new HTTPError(401, 'Not authorized', this.context ?? 'auth'));
+		return next(new AuthError(401, 'Not authorized', this.context ?? 'auth'));
 	}
 }
