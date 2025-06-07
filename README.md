@@ -89,12 +89,18 @@ Content-Type: application/json
 }
 ```
 
-**Ответ (200 OK)**
+**Ответ (201 OK)**
+
 ```json
 {
-  "id": 1,
-  "email": "user@example.com",
-  "name": "Username"
+  "success": true,
+  "data": {
+    "user": {
+      "id": 1,
+      "email": "user@example.com",
+      "name": "Username"
+    }
+  }
 }
 ```
 
@@ -112,7 +118,12 @@ Content-Type: application/json
 **Ответ (200 OK)**
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5..."
+  "success": true,
+  "data": {
+    "auth": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5..."
+    }
+  }
 }
 ```
 
@@ -132,7 +143,12 @@ POST /users/refresh
 **Ответ (200 OK)**
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5..."
+  "success": true,
+  "data": {
+    "auth": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5..."
+    }
+  }
 }
 ```
 
@@ -149,7 +165,12 @@ POST /users/logout
 **Ответ (200 OK)**
 ```json
 {
-  "message": "Logged out successfully"
+  "success": true,
+  "data": {
+    "auth": {
+      "message": "Logged out successfully"
+    }
+  }
 }
 ```
 
@@ -164,13 +185,35 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5...
 **Ответ (200 OK)**
 ```json
 {
-  "id": 1,
-  "email": "user@example.com",
-  "name": "Username"
+  "success": true,
+  "data": {
+    "user": {
+      "id": 1,
+      "email": "user@example.com",
+      "name": "Username"
+    }
+  }
 }
 ```
 
 ## Обработка ошибок
+
+### Общий формат ответа с ошибкой
+```json
+{
+	"success": false,
+	"error": {
+		"statusCode": 401,
+		"errors": [
+			{
+				"message": "Invalid access token",
+				"context": "auth"
+			}
+		],
+		"stack": "Error: Invalid access..."
+	}
+}
+```
 
 ### Общий формат ошибок
 ```json

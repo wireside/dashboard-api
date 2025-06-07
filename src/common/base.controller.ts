@@ -21,20 +21,41 @@ export abstract class BaseController implements IBaseController {
 		res: Response<IApiResponse>,
 		code: number,
 		data: T,
+		context?: string,
 	): ExpressReturnType<IApiResponse> {
 		res.type('application/json');
+		
+		if (context) {
+			return res.status(code).json({
+				success: true,
+				data: {
+					[context]: {
+						...data,
+					},
+				},
+			});
+		}
+		
 		return res.status(code).json({
 			success: true,
 			data,
 		});
 	}
 
-	public ok<T>(res: Response<IApiResponse>, data: T): ExpressReturnType<IApiResponse> {
-		return this.send<T>(res, 200, data);
+	public ok<T>(
+		res: Response<IApiResponse>,
+		data: T,
+		context?: string,
+	): ExpressReturnType<IApiResponse> {
+		return this.send<T>(res, 200, data, context);
 	}
 
-	public created<T>(res: Response<IApiResponse>, data: T): ExpressReturnType<IApiResponse> {
-		return this.send<T>(res, 201, data);
+	public created<T>(
+		res: Response<IApiResponse>,
+		data: T,
+		context?: string,
+	): ExpressReturnType<IApiResponse> {
+		return this.send<T>(res, 201, data, context);
 	}
 
 	protected bindRoutes(routes: IControllerRoute[]): void {

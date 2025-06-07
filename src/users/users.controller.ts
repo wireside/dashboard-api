@@ -87,7 +87,7 @@ export class UserController extends BaseController implements IUserController {
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
 
-		this.ok(res, { accessToken });
+		this.ok(res, { accessToken }, 'auth');
 	}
 
 	async signup(
@@ -100,11 +100,15 @@ export class UserController extends BaseController implements IUserController {
 			return next(new HTTPError(422, 'User is already exists', 'auth:signup'));
 		}
 
-		this.created<Partial<User>>(res, {
-			id: result.id,
-			email: result.email,
-			name: result.name,
-		});
+		this.created<Partial<User>>(
+			res,
+			{
+				id: result.id,
+				email: result.email,
+				name: result.name,
+			},
+			'user',
+		);
 	}
 
 	async logout(
@@ -122,7 +126,7 @@ export class UserController extends BaseController implements IUserController {
 
 			res.clearCookie('refreshToken');
 
-			this.ok(res, { message: 'Logged out successfully' });
+			this.ok(res, { message: 'Logged out successfully' }, 'auth');
 		} catch (e) {
 			return next(new HTTPError(401, 'Invalid refresh token', 'auth:logout'));
 		}
@@ -166,7 +170,7 @@ export class UserController extends BaseController implements IUserController {
 				maxAge: 7 * 24 * 60 * 60 * 1000,
 			});
 
-			this.ok(res, { accessToken: newAccessToken });
+			this.ok(res, { accessToken: newAccessToken }, 'auth');
 		} catch (e) {
 			if (e instanceof TokenExpiredError) {
 				this.send(res, 302, 'Refresh token expired, please login again');
@@ -186,9 +190,13 @@ export class UserController extends BaseController implements IUserController {
 		next: NextFunction,
 	): Promise<void> {
 		const userData = await this.userService.getUser({ email: user.email });
-		this.ok(res, {
-			id: userData?.id,
-			email: userData?.email,
-		});
+		this.ok<Partial<User>>(
+			res,
+			{
+				id: userData?.id,
+				email: userData?.email,
+			},
+			'user',
+		);
 	}
 }
