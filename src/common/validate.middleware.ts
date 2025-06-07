@@ -22,7 +22,7 @@ export class ValidateMiddleware implements IMiddleware {
 								if (!errorMessage) {
 									errorMessage = error.constraints[key];
 								} else {
-									errorMessage += `, ${error.constraints[key]}`;
+									errorMessage += `; ${error.constraints[key]}`;
 								}
 							}
 
