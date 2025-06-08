@@ -62,7 +62,7 @@ export class UserController extends BaseController implements IUserController {
 
 	async login(
 		{ body }: Request<{}, {}, UserLoginDto>,
-		res: Response,
+		res: Response<IApiResponse>,
 		next: NextFunction,
 	): Promise<void> {
 		const user = await this.userService.authenticateUser(body);
@@ -93,7 +93,7 @@ export class UserController extends BaseController implements IUserController {
 
 	async signup(
 		{ body }: Request<{}, {}, UserSignupDto>,
-		res: Response,
+		res: Response<IApiResponse>,
 		next: NextFunction,
 	): Promise<void> {
 		const result = await this.userService.createUser(body);
@@ -113,8 +113,8 @@ export class UserController extends BaseController implements IUserController {
 	}
 
 	async logout(
-		req: Request<{}, {}, UserSignupDto>,
-		res: Response,
+		req: Request,
+		res: Response<IApiResponse>,
 		next: NextFunction,
 	): Promise<void> {
 		try {
@@ -193,11 +193,7 @@ export class UserController extends BaseController implements IUserController {
 		}
 	}
 
-	async info(
-		{ user }: Request<{}, {}, UserSignupDto>,
-		res: Response,
-		next: NextFunction,
-	): Promise<void> {
+	async info({ user }: Request, res: Response<IApiResponse>, next: NextFunction): Promise<void> {
 		const userData = await this.userService.getUser({ email: user.email });
 		this.ok<Partial<User>>(
 			res,

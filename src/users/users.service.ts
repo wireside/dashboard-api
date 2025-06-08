@@ -31,6 +31,7 @@ export class UserService implements IUserService {
 		if (!existedUser) {
 			return null;
 		}
+		
 		const userToValidate = new UserEntity(
 			existedUser.email,
 			existedUser.name,
