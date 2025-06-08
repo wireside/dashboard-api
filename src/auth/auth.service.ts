@@ -6,8 +6,7 @@ import { TYPES } from '../types';
 import { IUserRepository } from '../users/users.repository.interface';
 import { IAuthService } from './auth.service.interface';
 
-injectable();
-
+injectable()
 export class AuthService implements IAuthService {
 	constructor(
 		@inject(TYPES.ConfigService) private configService: IConfigService,
