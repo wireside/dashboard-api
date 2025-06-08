@@ -8,7 +8,6 @@
     "start": "node ./dist/main.js",
     "dev": "nodemon",
     "dev:inspect": "nodemon -e ts,json --exec 'tsc --noEmit && tsx --inspect=localhost:9229 ./src/main.ts'",
-    "generate": "prisma generate",
     "lint": "eslint ./src/**",
     "lint:fix": "eslint --fix ./src/**",
     "build": "tsc",
