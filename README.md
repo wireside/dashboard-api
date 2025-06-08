@@ -1,4 +1,5 @@
 # Документация API
+[![CI](https://github.com/wireside/dashboard-api/actions/workflows/github-ci.yml/badge.svg)](https://github.com/wireside/dashboard-api/actions/workflows/github-ci.yml)
 
 ## Обзор
 
