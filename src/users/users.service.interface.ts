@@ -4,7 +4,7 @@ import { UserSignupDto } from './dto/user-signup.dto';
 
 export interface IUserService {
 	createUser: (dto: UserSignupDto) => Promise<User | null>;
-	authenticateUser: (dto: UserLoginDto) => Promise<User | null>;
+	validateUser: (dto: UserLoginDto) => Promise<User | null>;
 	getUser: (where: Prisma.UserWhereUniqueInput) => Promise<User | null>;
 	getUserById: (userId: number) => Promise<User | null>;
 }

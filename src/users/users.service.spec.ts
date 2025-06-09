@@ -55,7 +55,8 @@ describe('User Service', () => {
 					email: user.email,
 					name: user.name,
 					password: user.password,
-					refreshToken: null,
+					createdAt: new Date(),
+					updatedAt: new Date(Date.now() - 1),
 				};
 			});
 
@@ -75,7 +76,8 @@ describe('User Service', () => {
 						email: where.email as string,
 						name: userData.name,
 						password: 'hashedPassword',
-						refreshToken: null,
+						createdAt: new Date(),
+						updatedAt: new Date(Date.now() - 1),
 					};
 				});
 
@@ -86,7 +88,7 @@ describe('User Service', () => {
 		});
 	});
 
-	describe('authenticateUser', () => {
+	describe('validateUser', () => {
 		const userData = {
 			email: 'test@mail.com',
 			password: 'test-password',
@@ -101,14 +103,15 @@ describe('User Service', () => {
 						email: where.email as string,
 						name: 'test-name',
 						password: 'hashedPassword',
-						refreshToken: null,
+						createdAt: new Date(),
+						updatedAt: new Date(Date.now() - 1),
 					};
 				});
 			const comparePassword = jest
 				.spyOn(UserEntity.prototype, 'comparePassword')
 				.mockResolvedValueOnce(true);
 
-			const authenticatedUser = await userService.authenticateUser(userData);
+			const authenticatedUser = await userService.validateUser(userData);
 
 			expect(userRepository.find).toHaveBeenCalledWith({
 				email: userData.email,
@@ -122,7 +125,7 @@ describe('User Service', () => {
 			userRepository.find = jest.fn().mockResolvedValueOnce(null);
 			const comparePassword = jest.spyOn(UserEntity.prototype, 'comparePassword');
 
-			const authenticatedUser = await userService.authenticateUser(userData);
+			const authenticatedUser = await userService.validateUser(userData);
 
 			expect(authenticatedUser).toEqual(null);
 			expect(comparePassword).not.toHaveBeenCalled();
@@ -141,14 +144,15 @@ describe('User Service', () => {
 						email: where.email as string,
 						name: 'test-name',
 						password: 'hashedPassword',
-						refreshToken: null,
+						createdAt: new Date(),
+						updatedAt: new Date(Date.now() - 1),
 					};
 				});
 			const comparePassword = jest
 				.spyOn(UserEntity.prototype, 'comparePassword')
 				.mockResolvedValueOnce(false);
 
-			const authenticatedUser = await userService.authenticateUser(invalidPasswordUserData);
+			const authenticatedUser = await userService.validateUser(invalidPasswordUserData);
 
 			expect(userRepository.find).toHaveBeenCalledWith({
 				email: invalidPasswordUserData.email,
@@ -172,7 +176,8 @@ describe('User Service', () => {
 						email: where.email as string,
 						name: 'test-name',
 						password: 'hashedPassword',
-						refreshToken: null,
+						createdAt: new Date(),
+						updatedAt: new Date(Date.now() - 1),
 					};
 				});
 
@@ -204,7 +209,8 @@ describe('User Service', () => {
 					email: 'test@email.com',
 					name: 'test-name',
 					password: 'hashedPassword',
-					refreshToken: null,
+					createdAt: new Date(),
+					updatedAt: new Date(Date.now() - 1),
 				};
 			});
 

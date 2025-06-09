@@ -14,9 +14,26 @@ datasource db {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  email        String @unique
-  refreshToken String?
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
   name         String
   password     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  authSessions AuthSession[]
+}
+
+model AuthSession {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  refreshToken String? // Todo Хэш токена
+  expiresAt    DateTime
+  isRevoked    Boolean  @default(false)
+  deviceInfo   String? // User-Agent или идентификатор устройства
+  ipAddress    String? // IP-адрес
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, refreshToken])
+  @@index([userId])
 }

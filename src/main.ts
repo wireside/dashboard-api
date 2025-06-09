@@ -1,5 +1,9 @@
 import { Container, ContainerModule } from 'inversify';
 import { App } from './app';
+import { AuthController } from './auth/auth.controller';
+import { IAuthController } from './auth/auth.controller.interface';
+import { AuthRepository } from './auth/auth.repository';
+import { IAuthRepository } from './auth/auth.repository.interface';
 import { AuthService } from './auth/auth.service';
 import { IAuthService } from './auth/auth.service.interface';
 import { ConfigService } from './config/config.service';
@@ -28,7 +32,9 @@ export const appBindings = new ContainerModule(({ bind }) => {
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
 	bind<IExceptionFilter>(TYPES.AuthExceptionFilter).to(AuthExceptionFilter);
+	bind<IAuthController>(TYPES.AuthController).to(AuthController);
 	bind<IAuthService>(TYPES.AuthService).to(AuthService).inSingletonScope();
+	bind<IAuthRepository>(TYPES.AuthRepository).to(AuthRepository).inSingletonScope();
 	bind<IUserController>(TYPES.UserController).to(UserController);
 	bind<IUserService>(TYPES.UserService).to(UserService);
 	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();

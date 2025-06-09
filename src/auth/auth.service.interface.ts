@@ -1,14 +1,32 @@
-import { User } from '@prisma/client';
-import { JwtPayload, VerifyErrors } from 'jsonwebtoken';
-
-type a = VerifyErrors;
+import { AuthSession, Prisma, User } from "@prisma/client";
+import { JwtPayload, VerifyErrors } from "jsonwebtoken";
+import { UserLoginDto } from "../users/dto/user-login.dto";
+import { UserSignupDto } from "../users/dto/user-signup.dto";
 
 export interface IAuthService {
-	signAccessToken: (payload: Record<string, any>, secret?: string) => Promise<string>;
-	signRefreshToken: (payload: Record<string, any>, secret?: string) => Promise<string>;
-	verifyAccessToken: (token: string) => Promise<JwtPayload>;
-	verifyRefreshToken: (token: string) => Promise<JwtPayload>;
-	saveRefreshToken: (userId: number, token: string) => Promise<User>;
-	deleteRefreshToken: (userId: number) => Promise<User>;
-	verifyStoredRefreshToken: (userId: number, token: string) => Promise<boolean>;
+  registerUser: (dto: UserSignupDto) => Promise<User | null>;
+  authenticateUser: (dto: UserLoginDto) => Promise<User | null>;
+  signAccessToken: (
+    payload: Record<string, any>,
+    secret?: string,
+  ) => Promise<string>;
+  signRefreshToken: (
+    payload: Record<string, any>,
+    secret?: string,
+  ) => Promise<string>;
+  verifyAccessToken: (token: string) => Promise<JwtPayload>;
+  verifyRefreshToken: (token: string) => Promise<JwtPayload>;
+  updateAuthSession: (
+    userId: number,
+    token: string,
+    expiresAt: Date,
+    oldToken: string,
+  ) => Promise<AuthSession>;
+  saveAuthSession: (
+    userId: number,
+    token: string,
+    expiresAt: Date,
+  ) => Promise<AuthSession>;
+  deleteAuthSession: (userId: number, token: string) => Promise<void>;
+  verifyStoredRefreshToken: (userId: number, token: string) => Promise<boolean>;
 }
