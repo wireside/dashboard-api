@@ -22,15 +22,15 @@ export default defineConfig([
 			'plugin:@typescript-eslint/recommended',
 			// 'plugin:prettier/recommended',
 		),
-
+		
 		plugins: {
 			'@typescript-eslint': typescriptEslint,
 		},
-
+		
 		languageOptions: {
 			parser: tsParser,
 		},
-
+		
 		rules: {
 			'no-empty-function': 'off',
 			'no-trailing-spaces': 'off',

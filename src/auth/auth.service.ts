@@ -1,93 +1,145 @@
-import { User } from '@prisma/client';
-import { inject, injectable } from 'inversify';
-import { JwtPayload, Secret, sign, verify } from 'jsonwebtoken';
-import { IConfigService } from '../config/config.service.interface';
-import { TYPES } from '../types';
-import { IUserRepository } from '../users/users.repository.interface';
-import { IAuthService } from './auth.service.interface';
+import { AuthSession, User } from "@prisma/client";
+import { inject, injectable } from "inversify";
+import { JwtPayload, Secret, sign, verify } from "jsonwebtoken";
+import { IConfigService } from "../config/config.service.interface";
+import { TYPES } from "../types";
+import { UserLoginDto } from "../users/dto/user-login.dto";
+import { UserSignupDto } from "../users/dto/user-signup.dto";
+import { IUserService } from "../users/users.service.interface";
+import { IAuthRepository } from "./auth.repository.interface";
+import { IAuthService } from "./auth.service.interface";
 
-injectable()
+@injectable()
 export class AuthService implements IAuthService {
-	constructor(
-		@inject(TYPES.ConfigService) private configService: IConfigService,
-		@inject(TYPES.UserRepository) private userRepository: IUserRepository,
-	) {}
+  constructor(
+    @inject(TYPES.ConfigService) private configService: IConfigService,
+    @inject(TYPES.UserService) private userService: IUserService,
+    @inject(TYPES.AuthRepository) private authRepository: IAuthRepository,
+  ) {}
 
-	public signAccessToken(payload: Record<string, any>, secret?: string): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
-			sign(
-				{
-					...payload,
-					iat: Math.floor(Date.now() / 1000),
-				},
-				secret ?? this.configService.get('JWT_SECRET_KEY'),
-				{
-					algorithm: 'HS256',
-					expiresIn: '15m',
-				},
-				(error, token) => {
-					if (error) {
-						reject(error);
-					}
-					resolve(token as string);
-				},
-			);
-		});
-	}
+  public async registerUser(
+    userSignupDto: UserSignupDto,
+  ): Promise<User | null> {
+    return this.userService.createUser(userSignupDto);
+  }
 
-	public signRefreshToken(payload: Record<string, any>, secret?: string): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
-			sign(
-				{
-					...payload,
-					iat: Math.floor(Date.now() / 1000),
-				},
-				secret ?? this.configService.get('JWT_REFRESH_SECRET_KEY'),
-				{
-					algorithm: 'HS256',
-					expiresIn: '7d',
-				},
-				(error, token) => {
-					if (error) {
-						reject(error);
-					}
-					resolve(token as string);
-				},
-			);
-		});
-	}
+  public async authenticateUser({
+    email,
+    password,
+  }: UserLoginDto): Promise<User | null> {
+    return this.userService.validateUser({ email, password });
+  }
 
-	private verifyToken(token: string, secretKey: string): Promise<JwtPayload> {
-		return new Promise<JwtPayload>((resolve, reject) => {
-			verify(token, secretKey, (error, payload) => {
-				if (error) {
-					reject(error);
-				}
-				resolve(payload as JwtPayload);
-			});
-		});
-	}
+  public signAccessToken(
+    payload: Record<string, any>,
+    secret?: string,
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      sign(
+        {
+          ...payload,
+          iat: Math.floor(Date.now() / 1000),
+        },
+        secret ?? this.configService.get("JWT_SECRET_KEY"),
+        {
+          algorithm: "HS256",
+          expiresIn: "15m",
+        },
+        (error, token) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(token as string);
+        },
+      );
+    });
+  }
 
-	public verifyAccessToken(token: string): Promise<JwtPayload> {
-		const secretKey: Secret = this.configService.get('JWT_SECRET_KEY');
-		return this.verifyToken(token, secretKey);
-	}
+  public signRefreshToken(
+    payload: Record<string, any>,
+    secret?: string,
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      sign(
+        {
+          ...payload,
+          iat: Math.floor(Date.now() / 1000),
+        },
+        secret ?? this.configService.get("JWT_REFRESH_SECRET_KEY"),
+        {
+          algorithm: "HS256",
+          expiresIn: "7d",
+        },
+        (error, token) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(token as string);
+        },
+      );
+    });
+  }
 
-	public verifyRefreshToken(token: string): Promise<JwtPayload> {
-		const refreshSecretKey: Secret = this.configService.get('JWT_REFRESH_SECRET_KEY');
-		return this.verifyToken(token, refreshSecretKey);
-	}
+  private verifyToken(token: string, secretKey: string): Promise<JwtPayload> {
+    return new Promise<JwtPayload>((resolve, reject) => {
+      verify(token, secretKey, (error, payload) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(payload as JwtPayload);
+      });
+    });
+  }
 
-	public async saveRefreshToken(userId: number, token: string): Promise<User> {
-		return this.userRepository.update(userId, { refreshToken: token });
-	}
+  public verifyAccessToken(token: string): Promise<JwtPayload> {
+    const secretKey: Secret = this.configService.get("JWT_SECRET_KEY");
+    return this.verifyToken(token, secretKey);
+  }
 
-	public async deleteRefreshToken(userId: number): Promise<User> {
-		return this.userRepository.update(userId, { refreshToken: null });
-	}
+  public verifyRefreshToken(token: string): Promise<JwtPayload> {
+    const refreshSecretKey: Secret = this.configService.get(
+      "JWT_REFRESH_SECRET_KEY",
+    );
+    return this.verifyToken(token, refreshSecretKey);
+  }
 
-	public async verifyStoredRefreshToken(userId: number, token: string): Promise<boolean> {
-		const user = await this.userRepository.findById(userId);
-		return user?.refreshToken == token;
-	}
+  public async saveAuthSession(
+    userId: number,
+    token: string,
+    expiresAt: Date,
+  ): Promise<AuthSession> {
+    return this.authRepository.saveAuthSession(userId, token, expiresAt);
+  }
+
+  public async updateAuthSession(
+    userId: number,
+    token: string,
+    expiresAt: Date,
+    oldToken: string,
+  ): Promise<AuthSession> {
+    return this.authRepository.updateAuthSession(
+      userId,
+      token,
+      expiresAt,
+      oldToken,
+    );
+  }
+
+  public async deleteAuthSession(
+    userId: number,
+    refreshToken: string,
+  ): Promise<void> {
+    return this.authRepository.deleteAuthSession(userId, refreshToken);
+  }
+
+  public async verifyStoredRefreshToken(
+    userId: number,
+    token: string,
+  ): Promise<boolean> {
+    const authSession = await this.authRepository.findAuthSession(
+      userId,
+      token,
+    );
+    return !!authSession?.refreshToken;
+  }
 }

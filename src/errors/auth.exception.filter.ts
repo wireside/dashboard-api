@@ -7,8 +7,7 @@ import { AuthError } from './auth-error.class';
 import { IExceptionFilter } from './exception.filter.interface';
 import { HTTPError } from './http-error.class';
 
-injectable();
-
+@injectable()
 export class AuthExceptionFilter implements IExceptionFilter {
 	constructor(@inject(TYPES.ILogger) private logger: ILogger) {}
 

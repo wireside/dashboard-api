@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import express, { Express } from 'express';
 import { inject, injectable } from 'inversify';
 import { Server } from 'node:http';
+import { IAuthController } from './auth/auth.controller.interface';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { IAuthService } from './auth/auth.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
@@ -25,6 +26,7 @@ export class App {
 		@inject(TYPES.AuthExceptionFilter) private authExceptionFilter: IExceptionFilter,
 		@inject(TYPES.PrismaService) private prismaService: IPrismaService,
 		@inject(TYPES.AuthService) private authService: IAuthService,
+		@inject(TYPES.AuthController) private authController: IAuthController,
 	) {
 		this.app = express();
 		this.port = 8000;
@@ -40,6 +42,7 @@ export class App {
 	}
 
 	useRoutes(): void {
+		this.app.use('/auth', this.authController.router);
 		this.app.use('/users', this.userController.router);
 	}
 
