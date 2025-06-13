@@ -1,7 +1,12 @@
 import { AuthSession, User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Container } from 'inversify';
 import { decode, JsonWebTokenError, JwtPayload, sign } from 'jsonwebtoken';
+import crypto from 'node:crypto';
 import { IConfigService } from '../config/config.service.interface';
+import { AuthError } from '../errors/auth-error.class';
+import { ILogger } from '../logger/logger.interface';
+import { IMailService } from '../mail/mail.service.interface';
 import { TYPES } from '../types';
 import { UserLoginDto } from '../users/dto/user-login.dto';
 import { UserSignupDto } from '../users/dto/user-signup.dto';
@@ -15,8 +20,19 @@ const enum secrets {
 	JWT_REFRESH_SECRET_KEY = 'JWT_REFRESH_SECRET_KEY',
 }
 
+const LoggerMock: ILogger = {
+	logger: undefined,
+	log: jest.fn(),
+	warn: jest.fn(),
+	error: jest.fn(),
+};
+
 const ConfigServiceMock: IConfigService = {
 	get: jest.fn(),
+};
+
+const MailServiceMock: IMailService = {
+	sendEmail: jest.fn(),
 };
 
 const AuthRepositoryMock: IAuthRepository = {
@@ -24,6 +40,9 @@ const AuthRepositoryMock: IAuthRepository = {
 	updateAuthSession: jest.fn(),
 	findAuthSession: jest.fn(),
 	deleteAuthSession: jest.fn(),
+	createVerificationToken: jest.fn(),
+	deleteVerificationToken: jest.fn(),
+	findVerificationToken: jest.fn(),
 };
 
 const UserServiceMock: IUserService = {
@@ -31,16 +50,21 @@ const UserServiceMock: IUserService = {
 	validateUser: jest.fn(),
 	getUser: jest.fn(),
 	getUserById: jest.fn(),
+	activateUser: jest.fn(),
+	deactivateUser: jest.fn(),
 };
 
 const container = new Container();
 let configService: IConfigService;
+let mailService: IMailService;
 let authRepository: IAuthRepository;
 let userService: IUserService;
 let authService: IAuthService;
 
 beforeAll(() => {
 	container.bind<IConfigService>(TYPES.ConfigService).toConstantValue(ConfigServiceMock);
+	container.bind<ILogger>(TYPES.ILogger).toConstantValue(LoggerMock);
+	container.bind<IMailService>(TYPES.MailService).toConstantValue(MailServiceMock);
 	container.bind<IAuthRepository>(TYPES.AuthRepository).toConstantValue(AuthRepositoryMock);
 	container.bind<IUserService>(TYPES.UserService).toConstantValue(UserServiceMock);
 	container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
@@ -48,6 +72,7 @@ beforeAll(() => {
 	authService = container.get<IAuthService>(TYPES.AuthService);
 	userService = container.get<IUserService>(TYPES.UserService);
 	authRepository = container.get<IAuthRepository>(TYPES.AuthRepository);
+	mailService = container.get<IMailService>(TYPES.MailService);
 	configService = container.get<IConfigService>(TYPES.ConfigService);
 });
 
@@ -72,6 +97,7 @@ describe('Auth Service', () => {
 					password: dto.password,
 					createdAt: new Date(),
 					updatedAt: new Date(),
+					isActive: false,
 				};
 			});
 
@@ -105,6 +131,7 @@ describe('Auth Service', () => {
 					password: 'hashed password',
 					createdAt: new Date(),
 					updatedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+					isActive: true,
 				};
 			});
 
@@ -423,5 +450,193 @@ describe('Auth Service', () => {
 				expect(isValid).toBeFalsy();
 			},
 		);
+	});
+
+	describe('generateVerificationToken', () => {
+		it('should successfully generate a unique token on the first attempt', async () => {
+			const userId = 1;
+			const mockToken = 'generated-token';
+			const expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+			jest.spyOn(crypto as any, 'randomBytes').mockImplementationOnce(
+				() =>
+					({
+						toString: () => mockToken,
+					}) as any,
+			);
+			configService.get = jest.fn().mockReturnValueOnce('86400000'); // 24 часа
+			authRepository.createVerificationToken = jest.fn().mockResolvedValueOnce({
+				id: 1,
+				userId,
+				token: mockToken,
+				createdAt: new Date(),
+				expiresAt: expiryDate,
+			});
+
+			const result = await authService.generateVerificationToken(userId);
+
+			expect(result).toBe(mockToken);
+			expect(authRepository.createVerificationToken).toHaveBeenCalledWith(
+				userId,
+				mockToken,
+				expect.any(Date),
+			);
+		});
+
+		it('should retry on uniqueness errors and eventually create a token', async () => {
+			const userId = 1;
+			const mockToken1 = 'duplicate-token';
+			const mockToken2 = 'unique-token';
+			jest
+				.spyOn(crypto as any, 'randomBytes')
+				.mockImplementationOnce(() => ({ toString: () => mockToken1 }) as any)
+				.mockImplementationOnce(() => ({ toString: () => mockToken2 }) as any);
+
+			configService.get = jest.fn().mockReturnValue('86400000');
+
+			authRepository.createVerificationToken = jest
+				.fn()
+				.mockImplementationOnce(() => {
+					const error = new Error('Unique constraint failed') as PrismaClientKnownRequestError;
+					error.code = 'P2002';
+					return Promise.reject(error);
+				})
+				.mockResolvedValueOnce({
+					id: 1,
+					userId,
+					token: mockToken2,
+					createdAt: new Date(),
+					expiresAt: new Date(),
+				});
+
+			const result = await authService.generateVerificationToken(userId);
+
+			expect(result).toBe(mockToken2);
+			expect(authRepository.createVerificationToken).toHaveBeenCalledTimes(2);
+		});
+
+		it('should throw an error after too many attempts', async () => {
+			const userId = 1;
+			jest.spyOn(crypto as any, 'randomBytes').mockImplementation(
+				() =>
+					({
+						toString: () => 'always-same-token',
+					}) as any,
+			);
+			configService.get = jest.fn().mockReturnValue('86400000');
+			authRepository.createVerificationToken = jest.fn().mockImplementation(() => {
+				const error = new Error('Unique constraint failed') as PrismaClientKnownRequestError;
+				error.code = 'P2002';
+				return Promise.reject(error);
+			});
+
+			await expect(authService.generateVerificationToken(userId)).rejects.toThrow();
+		});
+	});
+
+	describe('verifyEmail', () => {
+		it('should successfully verify email and activate the user', async () => {
+			const userId = 1;
+			const token = 'valid-token';
+			authRepository.findVerificationToken = jest.fn().mockResolvedValueOnce({
+				id: 1,
+				userId: userId,
+				token: token,
+				createdAt: new Date(),
+				expiresAt: new Date(Date.now() + 3600000),
+			});
+			userService.activateUser = jest.fn().mockResolvedValueOnce({
+				id: userId,
+				email: 'test@example.com',
+				name: 'Test User',
+				password: 'hashed_password',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				isActive: true,
+			});
+			authRepository.deleteVerificationToken = jest.fn().mockResolvedValueOnce(undefined);
+
+			const result = await authService.verifyEmail(userId, token);
+
+			expect(result.id).toBe(userId);
+			expect(result.isActive).toBe(true);
+			expect(authRepository.findVerificationToken).toHaveBeenCalledWith(userId, token);
+			expect(userService.activateUser).toHaveBeenCalledWith(userId);
+			expect(authRepository.deleteVerificationToken).toHaveBeenCalledWith(userId, token);
+		});
+
+		it('should throw an error when token is invalid', async () => {
+			const userId = 1;
+			const token = 'invalid-token';
+			authRepository.findVerificationToken = jest.fn().mockResolvedValueOnce(null);
+
+			await expect(authService.verifyEmail(userId, token)).rejects.toThrow(AuthError);
+		});
+
+		it('should throw an error when token is expired', async () => {
+			const userId = 1;
+			const token = 'expired-token';
+			authRepository.findVerificationToken = jest.fn().mockResolvedValueOnce({
+				id: 1,
+				userId: userId,
+				token: token,
+				createdAt: new Date(),
+				expiresAt: new Date(Date.now() - 3600000),
+			});
+
+			await expect(authService.verifyEmail(userId, token)).rejects.toThrow(AuthError);
+		});
+	});
+
+	describe('resendVerificationEmail', () => {
+		it('should successfully resend verification email', async () => {
+			const email = 'test@example.com';
+			const userId = 1;
+			const mockToken = 'new-verification-token';
+			userService.getUser = jest.fn().mockResolvedValueOnce({
+				id: userId,
+				email: email,
+				name: 'Test User',
+				password: 'hashed_password',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				isActive: false,
+			});
+			jest.spyOn(authService, 'generateVerificationToken').mockResolvedValueOnce(mockToken);
+			jest.spyOn(authService as any, 'sendVerificationEmail').mockResolvedValueOnce(undefined);
+
+			await authService.resendVerificationEmail(email);
+
+			expect(userService.getUser).toHaveBeenCalledWith({ email });
+			expect(authService.generateVerificationToken).toHaveBeenCalledWith(userId);
+			expect((authService as any).sendVerificationEmail).toHaveBeenCalledWith(
+				userId,
+				email,
+				mockToken,
+			);
+		});
+
+		it('should throw error if user is not found', async () => {
+			const email = 'nonexistent@example.com';
+			userService.getUser = jest.fn().mockResolvedValueOnce(null);
+
+			await expect(authService.resendVerificationEmail(email)).rejects.toThrow(AuthError);
+			expect(userService.getUser).toHaveBeenCalledWith({ email });
+		});
+
+		it('should throw error if user is already activated and verified', async () => {
+			const email = 'active@example.com';
+			userService.getUser = jest.fn().mockResolvedValueOnce({
+				id: 1,
+				email: email,
+				name: 'Active User',
+				password: 'hashed_password',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				isActive: true,
+			});
+
+			await expect(authService.resendVerificationEmail(email)).rejects.toThrow(AuthError);
+			expect(userService.getUser).toHaveBeenCalledWith({ email });
+		});
 	});
 });

@@ -1,4 +1,4 @@
-import { AuthSession } from '@prisma/client';
+import { AuthSession, VerificationToken } from '@prisma/client';
 
 export interface IAuthRepository {
 	saveAuthSession: (
@@ -15,4 +15,11 @@ export interface IAuthRepository {
 	) => Promise<AuthSession>;
 	findAuthSession: (userId: number, token: string) => Promise<AuthSession | null>;
 	deleteAuthSession: (userId: number, token: string) => Promise<void>;
+	createVerificationToken: (
+		userId: number,
+		token: string,
+		expiresAt: Date,
+	) => Promise<VerificationToken>;
+	deleteVerificationToken: (userId: number, token: string) => Promise<void>;
+	findVerificationToken: (userId: number, token: string) => Promise<VerificationToken | null>;
 }

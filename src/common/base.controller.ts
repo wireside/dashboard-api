@@ -24,7 +24,7 @@ export abstract class BaseController implements IBaseController {
 		context?: string,
 	): ExpressReturnType<IApiResponse> {
 		res.type('application/json');
-		
+
 		if (context) {
 			return res.status(code).json({
 				success: true,
@@ -35,7 +35,7 @@ export abstract class BaseController implements IBaseController {
 				},
 			});
 		}
-		
+
 		return res.status(code).json({
 			success: true,
 			data,

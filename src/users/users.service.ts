@@ -31,7 +31,7 @@ export class UserService implements IUserService {
 		if (!existedUser) {
 			return null;
 		}
-		
+
 		const userToValidate = new UserEntity(
 			existedUser.email,
 			existedUser.name,
@@ -50,5 +50,17 @@ export class UserService implements IUserService {
 
 	public async getUserById(userId: number): Promise<User | null> {
 		return this.userRepository.findById(userId);
+	}
+
+	public async activateUser(userId: number): Promise<User> {
+		return this.userRepository.update(userId, {
+			isActive: true,
+		});
+	}
+
+	public async deactivateUser(userId: number): Promise<User> {
+		return this.userRepository.update(userId, {
+			isActive: false,
+		});
 	}
 }

@@ -6,6 +6,7 @@ import { Server } from 'node:http';
 import { IAuthController } from './auth/auth.controller.interface';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { IAuthService } from './auth/auth.service.interface';
+import { IConfigService } from './config/config.service.interface';
 import { IPrismaService } from './database/prisma.service.interface';
 import { IExceptionFilter } from './errors/exception.filter.interface';
 import { ILogger } from './logger/logger.interface';
@@ -27,9 +28,10 @@ export class App {
 		@inject(TYPES.PrismaService) private prismaService: IPrismaService,
 		@inject(TYPES.AuthService) private authService: IAuthService,
 		@inject(TYPES.AuthController) private authController: IAuthController,
+		@inject(TYPES.ConfigService) private configService: IConfigService,
 	) {
 		this.app = express();
-		this.port = 8000;
+		this.port = this.configService.get('APP_PORT') ? +this.configService.get('APP_PORT') : 8000;
 	}
 
 	useMiddleware(): void {

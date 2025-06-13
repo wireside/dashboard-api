@@ -1,4 +1,4 @@
-import { AuthSession } from '@prisma/client';
+import { AuthSession, VerificationToken } from '@prisma/client';
 import { inject, injectable } from 'inversify';
 import { IPrismaService } from '../database/prisma.service.interface';
 import { TYPES } from '../types';
@@ -59,6 +59,45 @@ export class AuthRepository implements IAuthRepository {
 				userId_refreshToken: {
 					userId: userId,
 					refreshToken: token,
+				},
+			},
+		});
+	}
+
+	public async createVerificationToken(
+		userId: number,
+		token: string,
+		expiresAt: Date,
+	): Promise<VerificationToken> {
+		return this.prismaService.client.verificationToken.create({
+			data: {
+				userId,
+				token,
+				expiresAt,
+			},
+		});
+	}
+
+	public async deleteVerificationToken(userId: number, token: string): Promise<void> {
+		await this.prismaService.client.verificationToken.delete({
+			where: {
+				userId_token: {
+					userId,
+					token,
+				},
+			},
+		});
+	}
+
+	public async findVerificationToken(
+		userId: number,
+		token: string,
+	): Promise<VerificationToken | null> {
+		return this.prismaService.client.verificationToken.findUnique({
+			where: {
+				userId_token: {
+					userId,
+					token,
 				},
 			},
 		});

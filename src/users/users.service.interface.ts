@@ -7,4 +7,6 @@ export interface IUserService {
 	validateUser: (dto: UserLoginDto) => Promise<User | null>;
 	getUser: (where: Prisma.UserWhereUniqueInput) => Promise<User | null>;
 	getUserById: (userId: number) => Promise<User | null>;
+	activateUser: (userId: number) => Promise<User>;
+	deactivateUser: (userId: number) => Promise<User>;
 }

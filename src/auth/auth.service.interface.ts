@@ -19,4 +19,7 @@ export interface IAuthService {
 	saveAuthSession: (userId: number, token: string, expiresAt: Date) => Promise<AuthSession>;
 	deleteAuthSession: (userId: number, token: string) => Promise<void>;
 	verifyStoredRefreshToken: (userId: number, token: string) => Promise<boolean>;
+	generateVerificationToken: (userId: number) => Promise<string>;
+	verifyEmail: (userId: number, token: string) => Promise<User>;
+	resendVerificationEmail: (email: string) => Promise<void>;
 }

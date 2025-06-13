@@ -15,6 +15,8 @@ import { ExceptionFilter } from './errors/exception.filter';
 import { IExceptionFilter } from './errors/exception.filter.interface';
 import { ILogger } from './logger/logger.interface';
 import { LoggerService } from './logger/logger.service';
+import { MailService } from './mail/mail.service';
+import { IMailService } from './mail/mail.service.interface';
 import { TYPES } from './types';
 import { UserController } from './users/users.controller';
 import { IUserController } from './users/users.controller.inteface';
@@ -40,6 +42,7 @@ export const appBindings = new ContainerModule(({ bind }) => {
 	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
 	bind<IConfigService>(TYPES.ConfigService).to(ConfigService).inSingletonScope();
 	bind<IPrismaService>(TYPES.PrismaService).to(PrismaService).inSingletonScope();
+	bind<IMailService>(TYPES.MailService).to(MailService).inSingletonScope();
 	bind<App>(TYPES.Application).to(App).inSingletonScope();
 });
 

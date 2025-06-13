@@ -16,6 +16,7 @@ import { IUserService } from '../users/users.service.interface';
 import { IAuthController } from './auth.controller.interface';
 import { AuthGuardMiddleware } from './auth.guard.middleware';
 import { IAuthService } from './auth.service.interface';
+import { AuthVerificationEmailDto } from './dto/auth-verification-email.dto';
 
 @injectable()
 export class AuthController extends BaseController implements IAuthController {
@@ -51,6 +52,18 @@ export class AuthController extends BaseController implements IAuthController {
 				method: 'post',
 				middlewares: [],
 			},
+			{
+				path: '/activate/:userId/:token',
+				func: this.activate,
+				method: 'get',
+				middlewares: [],
+			},
+			{
+				path: '/resend-verification',
+				func: this.resendVerification,
+				method: 'post',
+				middlewares: [new ValidateMiddleware(AuthVerificationEmailDto)],
+			},
 		]);
 	}
 
@@ -59,27 +72,31 @@ export class AuthController extends BaseController implements IAuthController {
 		res: Response<IApiResponse>,
 		next: NextFunction,
 	): Promise<void> {
-		const user = await this.authService.authenticateUser(body);
-		if (!user) {
-			return next(new AuthError(401, 'Authorization failed', 'auth:login'));
+		try {
+			const user = await this.authService.authenticateUser(body);
+			if (!user) {
+				return next(new AuthError(401, 'Authorization failed', 'auth:login'));
+			}
+
+			const payload = {
+				id: user.id,
+				email: user.email,
+			};
+			const accessToken: string = await this.authService.signAccessToken(payload);
+			const refreshToken: string = await this.authService.signRefreshToken(payload);
+
+			await this.authService.saveAuthSession(
+				Number(user.id),
+				refreshToken,
+				new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+			);
+
+			this.sendRefreshTokenByCookie(res, refreshToken);
+
+			this.ok(res, { accessToken }, 'auth');
+		} catch (e) {
+			return next(e);
 		}
-
-		const payload = {
-			id: user.id,
-			email: user.email,
-		};
-		const accessToken: string = await this.authService.signAccessToken(payload);
-		const refreshToken: string = await this.authService.signRefreshToken(payload);
-
-		await this.authService.saveAuthSession(
-			Number(user.id),
-			refreshToken,
-			new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-		);
-
-		this.sendRefreshTokenByCookie(res, refreshToken);
-
-		this.ok(res, { accessToken }, 'auth');
 	}
 
 	async signup(
@@ -87,20 +104,52 @@ export class AuthController extends BaseController implements IAuthController {
 		res: Response<IApiResponse>,
 		next: NextFunction,
 	): Promise<void> {
-		const result = await this.authService.registerUser(body);
-		if (!result) {
-			return next(new AuthError(422, 'User is already exists', 'auth:signup'));
-		}
+		try {
+			const user = await this.authService.registerUser(body);
+			if (!user) {
+				return next(new AuthError(422, 'User is already exists', 'auth:signup'));
+			}
 
-		this.created<Partial<User>>(
-			res,
-			{
-				id: result.id,
-				email: result.email,
-				name: result.name,
-			},
-			'user',
-		);
+			this.created<Partial<User>>(
+				res,
+				{
+					id: user.id,
+					email: user.email,
+					name: user.name,
+				},
+				'user',
+			);
+		} catch (e) {
+			next(e);
+		}
+	}
+
+	public async activate(
+		req: Request,
+		res: Response<IApiResponse>,
+		next: NextFunction,
+	): Promise<void> {
+		try {
+			const user = await this.authService.verifyEmail(Number(req.params.userId), req.params.token);
+			this.ok(res, { message: 'Verification success' }, 'auth');
+		} catch (e) {
+			return next(e);
+		}
+	}
+
+	public async resendVerification(
+		{ body }: Request<{}, {}, AuthVerificationEmailDto>,
+		res: Response<IApiResponse>,
+		next: NextFunction,
+	): Promise<void> {
+		const email = body.email;
+
+		try {
+			await this.authService.resendVerificationEmail(email);
+			this.ok(res, { message: `Verification email is sent to ${email}` }, 'auth');
+		} catch (e) {
+			next(e);
+		}
 	}
 
 	async logout(req: Request, res: Response<IApiResponse>, next: NextFunction): Promise<void> {

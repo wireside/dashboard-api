@@ -57,6 +57,7 @@ describe('User Service', () => {
 					password: user.password,
 					createdAt: new Date(),
 					updatedAt: new Date(Date.now() - 1),
+					isActive: false,
 				};
 			});
 
@@ -78,6 +79,7 @@ describe('User Service', () => {
 						password: 'hashedPassword',
 						createdAt: new Date(),
 						updatedAt: new Date(Date.now() - 1),
+						isActive: false,
 					};
 				});
 
@@ -105,6 +107,7 @@ describe('User Service', () => {
 						password: 'hashedPassword',
 						createdAt: new Date(),
 						updatedAt: new Date(Date.now() - 1),
+						isActive: true,
 					};
 				});
 			const comparePassword = jest
@@ -146,6 +149,7 @@ describe('User Service', () => {
 						password: 'hashedPassword',
 						createdAt: new Date(),
 						updatedAt: new Date(Date.now() - 1),
+						isActive: true,
 					};
 				});
 			const comparePassword = jest
@@ -178,6 +182,7 @@ describe('User Service', () => {
 						password: 'hashedPassword',
 						createdAt: new Date(),
 						updatedAt: new Date(Date.now() - 1),
+						isActive: true,
 					};
 				});
 
@@ -215,7 +220,7 @@ describe('User Service', () => {
 			});
 
 			const user = await userService.getUserById(userId);
-			
+
 			expect(userRepository.findById).toHaveBeenCalledWith(userId);
 			expect(user).not.toBeNull();
 			expect(user?.id).toEqual(userId);

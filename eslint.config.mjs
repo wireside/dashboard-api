@@ -22,15 +22,15 @@ export default defineConfig([
 			'plugin:@typescript-eslint/recommended',
 			// 'plugin:prettier/recommended',
 		),
-		
+
 		plugins: {
 			'@typescript-eslint': typescriptEslint,
 		},
-		
+
 		languageOptions: {
 			parser: tsParser,
 		},
-		
+
 		rules: {
 			'no-empty-function': 'off',
 			'no-trailing-spaces': 'off',
@@ -59,6 +59,7 @@ export default defineConfig([
 			'src/auth/auth.service.ts',
 			'src/auth/auth.service.interface.ts',
 			'src/common/api-response.interface.ts',
+			'src/auth/auth.service.spec.ts',
 		],
 		rules: {
 			'@typescript-eslint/no-explicit-any': 'off',
