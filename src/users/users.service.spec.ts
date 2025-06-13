@@ -235,4 +235,52 @@ describe('User Service', () => {
 			expect(user).toEqual(null);
 		});
 	});
+
+	describe('activateUser', () => {
+		it('should activate user', async () => {
+			const userId = 1;
+			userRepository.update = jest
+				.fn()
+				.mockImplementationOnce((userId: number, data: Partial<User>): User => {
+					return {
+						id: userId,
+						email: 'test@mail.com',
+						name: 'test-name',
+						password: 'test-password',
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						isActive: true,
+					};
+				});
+			
+			const activatedUser = await userService.activateUser(userId);
+			
+			expect(activatedUser.id).toBe(userId);
+			expect(activatedUser.isActive).not.toBeFalsy();
+		});
+	});
+	
+	describe('deactivateUser', () => {
+		it('should deactivate user', async () => {
+			const userId = 489;
+			userRepository.update = jest
+				.fn()
+				.mockImplementationOnce((userId: number, data: Partial<User>): User => {
+					return {
+						id: userId,
+						email: 'test@mail.com',
+						name: 'unverified-user',
+						password: 'test-password',
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						isActive: false,
+					};
+				});
+			
+			const activatedUser = await userService.deactivateUser(userId);
+			
+			expect(activatedUser.id).toBe(userId);
+			expect(activatedUser.isActive).toBeFalsy();
+		});
+	});
 });
