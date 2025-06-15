@@ -7,7 +7,6 @@ configDotenv();
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-	// Создаем тестового пользователя, который используется в тестах
 	await prisma.user.upsert({
 		where: { email: 'aa@a.ru' },
 		update: {},
