@@ -5,7 +5,8 @@
   "ext": "ts,json",
   "ignore": [
     "src/**/*.spec.ts",
-    "src/tests/*.e2e-spec.ts"
+    "src/tests/*.e2e-spec.ts",
+    "src/emails"
   ],
   "delay": 0,
   "exec": "tsc --noEmit && tsx ./src/main.ts || exit 1"

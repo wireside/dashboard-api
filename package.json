@@ -8,8 +8,8 @@
     "start": "node ./dist/main.js",
     "dev": "nodemon",
     "dev:inspect": "nodemon -e ts,json --exec 'tsc --noEmit && tsx --inspect=localhost:9229 ./src/main.ts'",
-    "lint": "eslint ./src/**",
-    "lint:fix": "eslint --fix ./src/**",
+    "lint": "eslint \"./src/**/*.{js,ts,tsx,jsx}\"",
+    "lint:fix": "eslint --fix \"./src/**/*.{js,ts,tsx,jsx}\"",
     "build": "tsc",
     "test": "jest",
     "test:e2e": "jest --config jest.e2e.config.ts"

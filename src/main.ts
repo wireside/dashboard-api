@@ -15,6 +15,7 @@ import { ExceptionFilter } from './errors/exception.filter';
 import { IExceptionFilter } from './errors/exception.filter.interface';
 import { ILogger } from './logger/logger.interface';
 import { LoggerService } from './logger/logger.service';
+import { FileMailService } from './mail/file.mail.service';
 import { MailService } from './mail/mail.service';
 import { IMailService } from './mail/mail.service.interface';
 import { TYPES } from './types';
@@ -31,6 +32,14 @@ export type BootstrapReturn = {
 };
 
 export const appBindings = new ContainerModule(({ bind }) => {
+	const nodeEnv = process.env.NODE_ENV ?? 'development';
+
+	if (nodeEnv === 'production') {
+		bind<IMailService>(TYPES.MailService).to(MailService).inSingletonScope();
+	} else {
+		bind<IMailService>(TYPES.MailService).to(FileMailService).inSingletonScope();
+	}
+
 	bind<ILogger>(TYPES.ILogger).to(LoggerService).inSingletonScope();
 	bind<IExceptionFilter>(TYPES.ExceptionFilter).to(ExceptionFilter);
 	bind<IExceptionFilter>(TYPES.AuthExceptionFilter).to(AuthExceptionFilter);
@@ -42,7 +51,6 @@ export const appBindings = new ContainerModule(({ bind }) => {
 	bind<IUserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
 	bind<IConfigService>(TYPES.ConfigService).to(ConfigService).inSingletonScope();
 	bind<IPrismaService>(TYPES.PrismaService).to(PrismaService).inSingletonScope();
-	bind<IMailService>(TYPES.MailService).to(MailService).inSingletonScope();
 	bind<App>(TYPES.Application).to(App).inSingletonScope();
 });
 

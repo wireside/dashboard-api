@@ -42,7 +42,7 @@ export class AuthService implements IAuthService {
 			return user;
 		}
 
-		return user;
+		return user satisfies null;
 	}
 
 	public async authenticateUser({ email, password }: UserLoginDto): Promise<User | null> {
