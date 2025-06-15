@@ -22,7 +22,6 @@ export class AuthExceptionFilter implements IExceptionFilter {
 			res.status(err.statusCode).send({
 				success: false,
 				error: {
-					statusCode: err.statusCode,
 					token: err.tokenPayload,
 					errors: [
 						{

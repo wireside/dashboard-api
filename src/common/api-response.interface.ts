@@ -11,13 +11,12 @@ export interface IApiErrorResponse {
 }
 
 export interface IApiError {
-	statusCode: number;
 	errors: IError[];
 	stack?: string | undefined;
 }
 
 export interface IAuthApiError extends IApiError {
-	token: {
+	token?: {
 		expired: boolean;
 	};
 }

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import { IApiErrorResponse } from '../common/api-response.interface';
-import { ILogger } from '../logger/logger.interface.js';
-import { TYPES } from '../types.js';
-import { IExceptionFilter } from './exception.filter.interface.js';
-import { HTTPError } from './http-error.class.js';
+import { ILogger } from '../logger/logger.interface';
+import { TYPES } from '../types';
+import { IExceptionFilter } from './exception.filter.interface';
+import { HTTPError } from './http-error.class';
 
 @injectable()
 export class ExceptionFilter implements IExceptionFilter {
@@ -21,7 +21,6 @@ export class ExceptionFilter implements IExceptionFilter {
 			res.status(err.statusCode).send({
 				success: false,
 				error: {
-					statusCode: err.statusCode,
 					errors: [
 						{
 							message: err.message,
@@ -36,7 +35,6 @@ export class ExceptionFilter implements IExceptionFilter {
 			res.status(500).send({
 				success: false,
 				error: {
-					statusCode: 500,
 					errors: [
 						{
 							message: err.message,

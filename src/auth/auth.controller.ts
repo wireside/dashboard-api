@@ -110,12 +110,13 @@ export class AuthController extends BaseController implements IAuthController {
 				return next(new AuthError(422, 'User is already exists', 'auth:signup'));
 			}
 
-			this.created<Partial<User>>(
+			this.created<Partial<User> & { message: string }>(
 				res,
 				{
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					message: `Verification email sent to ${user.email}`,
 				},
 				'user',
 			);

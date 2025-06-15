@@ -35,7 +35,7 @@ export class AuthService implements IAuthService {
 				throw new HTTPError(500, 'Failed to create verification token', 'auth:signup');
 			}
 
-			this.sendVerificationEmail(user.id, user.email, token).then(() =>
+			await this.sendVerificationEmail(user.id, user.email, token).then(() =>
 				this.logger.log(`[AuthService] sent verification email to ${user.email}`),
 			);
 
@@ -86,6 +86,7 @@ export class AuthService implements IAuthService {
 			sign(
 				{
 					...payload,
+					jti: crypto.randomBytes(16).toString('hex'),
 					iat: Math.floor(Date.now() / 1000),
 				},
 				secret ?? this.configService.get('JWT_REFRESH_SECRET_KEY'),
@@ -163,7 +164,10 @@ export class AuthService implements IAuthService {
 				const verificationToken = await this.authRepository.createVerificationToken(
 					userId,
 					token,
-					new Date(Date.now() + Number(this.configService.get('ACTIVATE_LINK_EXPIRES_IN'))),
+					new Date(
+						Date.now() +
+							Number(this.configService.get('ACTIVATE_LINK_EXPIRES_IN')) * 24 * 60 * 60 * 1000,
+					),
 				);
 
 				isUnique = true;
@@ -211,12 +215,12 @@ export class AuthService implements IAuthService {
 		}
 
 		if (user.isActive) {
-			throw new AuthError(422, 'User is already active and verified');
+			throw new AuthError(422, 'User is already active and verified', 'auth:resend-verification');
 		}
 
 		const token = await this.generateVerificationToken(user.id);
 		this.sendVerificationEmail(user.id, user.email, token).then(() =>
-			this.logger.log('[AuthService] sent verification email to ${user.email}'),
+			this.logger.log(`[AuthService] sent verification email to ${user.email}`),
 		);
 	}
 

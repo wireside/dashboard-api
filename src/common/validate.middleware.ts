@@ -14,7 +14,6 @@ export class ValidateMiddleware implements IMiddleware {
 				return res.status(422).send({
 					success: false,
 					error: {
-						statusCode: 422,
 						errors: errors.map((error) => {
 							let errorMessage: string = '';
 

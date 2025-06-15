@@ -9,6 +9,35 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      APP_URL: http://localhost
+      APP_PORT: 8000
+      SALT: 10
+      JWT_SECRET_KEY: no-secret-key
+      JWT_REFRESH_SECRET_KEY: no-refresh-secret-key
+      ACTIVATE_LINK_EXPIRES_IN: 1
+      MAIL_FROM: test@email.com
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: 2525
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,6 +52,14 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Set up database
+        run: npx prisma migrate deploy
+
+      - name: Seed test data
+        run: npx prisma db seed
           
       - name: Run Jest
-        run: npm test
+        run: |
+          npm test 
+          npm run test:e2e

@@ -4,7 +4,8 @@
   ],
   "ext": "ts,json",
   "ignore": [
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    "src/tests/*.e2e-spec.ts"
   ],
   "delay": 0,
   "exec": "tsc --noEmit && tsx ./src/main.ts || exit 1"

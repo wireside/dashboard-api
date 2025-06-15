@@ -62,4 +62,8 @@ export class App {
 			this.logger.log(`Server is running on http://localhost:${this.port}`);
 		});
 	}
+
+	public close(): void {
+		this.server.close();
+	}
 }

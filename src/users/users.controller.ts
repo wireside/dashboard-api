@@ -4,16 +4,11 @@ import { inject, injectable } from 'inversify';
 import { AuthGuardMiddleware } from '../auth/auth.guard.middleware';
 import { IAuthService } from '../auth/auth.service.interface';
 import { IApiResponse } from '../common/api-response.interface';
-import { BaseController } from '../common/base.controller.js';
-import { ValidateMiddleware } from '../common/validate.middleware';
+import { BaseController } from '../common/base.controller';
 import { IConfigService } from '../config/config.service.interface';
-import { AuthError } from '../errors/auth-error.class';
-import { HTTPError } from '../errors/http-error.class.js';
-import { ILogger } from '../logger/logger.interface.js';
-import { TYPES } from '../types.js';
-import { UserLoginDto } from './dto/user-login.dto';
-import { UserSignupDto } from './dto/user-signup.dto';
-import { IUserController } from './users.controller.inteface.js';
+import { ILogger } from '../logger/logger.interface';
+import { TYPES } from '../types';
+import { IUserController } from './users.controller.inteface';
 import { IUserService } from './users.service.interface';
 
 @injectable()
